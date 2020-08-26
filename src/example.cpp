@@ -32,11 +32,11 @@ void MultipleNormalsGrad( f64 *g, f64 *x, size_t n )
 {
 #define E 1e-10
 
-    f64 f0 = MultipleModes( x, n );
+    f64 f0 = MultipleNormals( x, n );
 
     for ( u32 i = 0; i < n; ++i ) {
         x[i] += E;
-        g[i] = ( MultipleModes( x, n ) - f0 ) / E;
+        g[i] = ( MultipleNormals( x, n ) - f0 ) / E;
         x[i] -= E;
     }
 
