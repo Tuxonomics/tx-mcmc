@@ -1,0 +1,16 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: tuxonomics/tx-ubuntu-mkl:0.1
+
+    steps:
+      - checkout
+      - run: make tests
+      - run: make tests/blas
+
+workflows:
+  "Run Tests":
+    jobs:
+      - build
