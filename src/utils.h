@@ -349,6 +349,8 @@ void test_arena()
     u32 *c = (u32 *) Alloc(  arenaAllocator, sizeof( u32 ) );
 
     ASSERT( ((u64) c - (u64) b) == 4 );
+
+    ArenaDestroy( &arena );
 }
 #endif
 
