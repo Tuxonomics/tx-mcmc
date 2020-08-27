@@ -91,7 +91,7 @@ i32 main( i32 argn, const char **argv )
     );
 
     // // MPrint(res.sample, "sample");
-    // MPrintRLiteral(res.sample, "sample");
+    MPrintRLiteral(res.sample, "sample");
 
 
     return 0;

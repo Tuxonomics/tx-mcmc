@@ -42,6 +42,7 @@ DISABLED_WARNINGS = -Wno-switch
 
 
 debug:		 		local_CFLAGS = -g -O0 -DDEBUG $(CFLAGS)
+debug-asan:	 		local_CFLAGS = -g -O0 -DDEBUG $(CFLAGS)
 release:     		local_CFLAGS = -O3 $(CFLAGS) -DRELEASE -march=native
 tests-debug: 		local_CFLAGS = -O0 -fno-exceptions $(CFLAGS)
 tests-asan:	 		local_CFLAGS = -O0 -fno-exceptions $(CFLAGS)
@@ -57,11 +58,17 @@ TEST_LOG = $(TEST)_tests.log
 
 all: 		debug
 debug:   	clean $(TARGET)
+debug-asan: clean $(TARGET)-asan
 release: 	clean $(TARGET)
 
 
 $(TARGET):
 	$(CXX) src/$(TARGET).cpp -o $(TARGET) $(local_CFLAGS) $(LFLAGS) $(DISABLED_WARNINGS)
+
+$(TARGET)-asan:
+	$(CXX) src/$(TARGET).cpp -o $(TARGET) $(local_CFLAGS) $(LFLAGS) $(DISABLED_WARNINGS) -fsanitize=address
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH="$(shell which llvm-symbolizer)" ./$(TARGET)
+
 
 
 utilities/genTests:

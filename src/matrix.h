@@ -156,7 +156,8 @@ INLINE
 void MCopy( Matrix z, Matrix x )
 {
     ASSERT_MSG( z.rows == x.rows, "MCopy: rows of input don't match." );
-    memcpy( z.data, x.data, z.rows*x.rows*sizeof(f64) );
+    ASSERT_MSG( z.cols == x.cols, "MCopy: cols of input don't match." );
+    memcpy( z.data, x.data, x.rows*x.cols*sizeof(f64) );
 }
 
 

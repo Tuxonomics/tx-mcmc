@@ -164,19 +164,19 @@ void LeapfrogStep(
     u32 n = os.q.rows;
 
     Mat(tmp0); Mat(tmp1); Mat(tmp2);
-    MInit(_ALLOCATOR_DEFAULT, &tmp0, n, 1);
-    MInit(_ALLOCATOR_DEFAULT, &tmp1, n, 1);
-    MInit(_ALLOCATOR_DEFAULT, &tmp2, n, 1);
+    MInit(AL, &tmp0, n, 1);
+    MInit(AL, &tmp1, n, 1);
+    MInit(AL, &tmp2, n, 1);
     defer({
-        MFree(_ALLOCATOR_DEFAULT, &tmp0);
-        MFree(_ALLOCATOR_DEFAULT, &tmp1);
-        MFree(_ALLOCATOR_DEFAULT, &tmp2);
+        MFree(AL, &tmp0);
+        MFree(AL, &tmp1);
+        MFree(AL, &tmp2);
     });
 
     Mat(grad);
-    MInit(_ALLOCATOR_DEFAULT, &grad, n, 1);
+    MInit(AL, &grad, n, 1);
     defer({
-        MFree(_ALLOCATOR_DEFAULT, &grad);
+        MFree(AL, &grad);
     });
 
     gradient(grad.data, os.q.data, os.q.rows);
@@ -251,17 +251,17 @@ void HMCStep(
     u32 n = q0.rows;
 
     Mat(p0);
-    MInit( _ALLOCATOR_DEFAULT, &p0, n, 1 );
-    defer({ MFree(_ALLOCATOR_DEFAULT, &p0); });
+    MInit( AL, &p0, n, 1 );
+    defer({ MFree(AL, &p0); });
 
     HamiltonianState os;
-    HamiltonianStateInit( _ALLOCATOR_DEFAULT, &os, n );
+    HamiltonianStateInit( AL, &os, n );
     HamiltonianState ns;
-    HamiltonianStateInit( _ALLOCATOR_DEFAULT, &ns, n );
+    HamiltonianStateInit( AL, &ns, n );
 
     defer({
-        HamiltonianStateFree( _ALLOCATOR_DEFAULT, &os );
-        HamiltonianStateFree( _ALLOCATOR_DEFAULT, &ns );
+        HamiltonianStateFree( AL, &os );
+        HamiltonianStateFree( AL, &ns );
     });
 
     ASSERT_MSG( ns.q.rows == q0.rows, "HMCStep: ns.q and q0 don't match." );
@@ -320,12 +320,12 @@ Results RunHMC(
 
     // Prepare inverse mass matrix for normal draws
     Mat(iMassCT);
-    MInit(_ALLOCATOR_DEFAULT, &iMassCT, iMass.rows, iMass.cols);
+    MInit(AL, &iMassCT, iMass.rows, iMass.cols);
     Mat(tmp);
-    MInit(_ALLOCATOR_DEFAULT, &tmp, iMass.rows, iMass.cols);
+    MInit(AL, &tmp, iMass.rows, iMass.cols);
     defer({
-        MFree(_ALLOCATOR_DEFAULT, &iMassCT);
-        MFree(_ALLOCATOR_DEFAULT, &tmp);
+        MFree(AL, &iMassCT);
+        MFree(AL, &tmp);
     });
 
     MCopy(tmp, iMass);
@@ -338,13 +338,13 @@ Results RunHMC(
 
     MSetRow( r.sample, 0, initialValues );
 
-    printf("pass\n");
-
     for ( u32 it = 1; it < nIter; ++it ) {
-        printf("it = %u\n", it);
         HMCStep(r, rng, eps, iMass, iMassCT, it, nSteps, f, gradient);
     }
 
     return r;
 }
+
+
+#undef AL
 
