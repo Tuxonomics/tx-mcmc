@@ -7,8 +7,8 @@ jobs:
 
     steps:
       - checkout
-      - run: make tests
-      - run: make tests/blas
+      - run: make tests-asan
+      - run: make tests-asan/blas
 
 workflows:
   "Run Tests":
