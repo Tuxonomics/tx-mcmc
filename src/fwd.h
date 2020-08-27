@@ -23,7 +23,7 @@ struct Fwd {
 
     Fwd( void ) {};
 
-    Fwd( f64 val ) : val( val ) {};
+    Fwd( f64 val ) : val( val ) { dot = T(0.0); };
 
     Fwd( Fwd<f64> x ) : val( x.val ), dot( x.dot ) {};
 
