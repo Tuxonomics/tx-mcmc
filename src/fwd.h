@@ -451,8 +451,10 @@ Fwd<T> atanh( Fwd<T> x )
 
 
 
-// Gradient from arbitrary function / functor
+// Gradients from arbitrary function / functor
 
+
+// prototype for f: f64 f( f64 *x, size_t n )
 template <typename F>
 void FiniteDifferences( f64 *g, f64 *x, size_t n, f64 eps, F f )
 {
@@ -465,6 +467,39 @@ void FiniteDifferences( f64 *g, f64 *x, size_t n, f64 eps, F f )
     }
 }
 
+
+// prototype for f: Fwd<f64> f( Fwd<f64> *x, size_t n )
+template <typename F>
+void FGradient( Allocator al, f64 *g, f64 *x, size_t n, F f )
+{
+    Fwd<f64> tmp = { 0 };
+
+    Fwd<f64> *xCpy = (Fwd<f64>*) Alloc( al, n * sizeof(Fwd<f64>) );
+    defer({ Free(al, xCpy); });
+
+    for ( size_t i=0; i<n; ++i ) {
+        xCpy[i] = Fwd<f64> (x[i]);
+    }
+
+    for ( size_t i=0; i<n; ++i ) {
+        xCpy[i].dot = 1.0;
+
+        tmp = f( xCpy, n );
+
+        g[i] = tmp.dot;
+
+        xCpy[i].dot = 0.0;
+    }
+
+}
+
+
+template <typename F>
+INLINE
+void FGradient( f64 *g, f64 *x, size_t n, F f )
+{
+    FGradient( _ALLOCATOR_DEFAULT, g, x, n, f );
+}
 
 
 #if TEST
@@ -729,6 +764,32 @@ void test_atanh( void )
 
     ASSERT( Equal(z.val, atanh(x.val), 1e-10) );
     ASSERT( Equal(z.dot, 1.0 / (1.0 - x.val*x.val), 1e-10) );
+}
+
+
+template <typename T>
+T test_grad_func( T *x, size_t n )
+{
+    T res = x[0]*x[0] + std::exp(x[1]);
+    return res;
+}
+
+void test_grad( void )
+{
+#define n 2
+
+    f64 x[n] = { 4.0, 1.0 };
+    f64 g1[n];
+    f64 g2[n];
+
+    FiniteDifferences( g1, x, n, 1e-8, test_grad_func<f64> );
+    FGradient( g2, x, n, test_grad_func<Fwd<f64>> );
+
+    for ( size_t i=0; i<n; ++i ) {
+        ASSERT( Equal(g1[i], g2[i], 1e-6) );
+    }
+
+#undef n
 }
 
 #endif
