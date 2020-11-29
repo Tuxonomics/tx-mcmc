@@ -5,54 +5,71 @@
 #include "fwd.h"
 
 
+// struct MultiModal {
+//     f64 m;
+//     f64 s;
 
-f64 normalpdf( f64 x, f64 mu, f64 s ) {
-    return 1.0 / (sqrt(2.0*M_PI) * s) * exp( - 0.5 * (x - mu)*(x - mu) / (s*s) );
+//     template <typename T>
+//     INLINE
+//     T normalpdf( T x, f64 m, f64 s ) {
+//         return 1.0 / (std::sqrt(2.0*M_PI) * s) * std::exp( - 0.5 * (x - m)*(x - m) / (s*s) );
+//     }
+
+//     template <typename T>
+//     T f( T *x, size_t n )
+//     {
+//         f64 res = 0.0;
+
+//         for ( u32 i = 0; i < n; ++i ) {
+//             res += std::log( normalpdf( x[i], m, s ) + normalpdf( x[i], -m, s ) );
+//         }
+
+//         return res;
+//     }
+
+//     void grad( f64 *g, f64 *x, size_t n )
+//     {
+//         FGradient( g, x, n, f<Fwd<f64>> );
+//     }
+// };
+
+
+
+f64 _M = 2.5;
+f64 _S = 1.0;
+
+template <typename T>
+INLINE
+T normalpdf( T x, f64 m, f64 s ) {
+    return 1.0 / (std::sqrt(2.0*M_PI) * s) * std::exp( - 0.5 * (x - m)*(x - m) / (s*s) );
 }
 
 
-#define M  2.5
-#define S  1.0
-
-f64 MultipleNormals( f64 *x, size_t n )
+template <typename T>
+T target( T *x, size_t n )
 {
-    f64 mu = M;
-    f64 s  = S;
-
-    f64 res = 0.0;
+    T res = 0.0;
 
     for ( u32 i = 0; i < n; ++i ) {
-        res += log( normalpdf( x[i], mu, s ) + normalpdf( x[i], -mu, s ) );
+        res += std::log( normalpdf( x[i], _M, _S ) + normalpdf( x[i], -_M, _S ) );
     }
 
     return res;
 }
 
-void MultipleNormalsGrad( f64 *g, f64 *x, size_t n )
+
+void grad( f64 *g, f64 *x, size_t n )
 {
-#define E 1e-10
-
-    f64 f0 = MultipleNormals( x, n );
-
-    for ( u32 i = 0; i < n; ++i ) {
-        x[i] += E;
-        g[i] = ( MultipleNormals( x, n ) - f0 ) / E;
-        x[i] -= E;
-    }
-
-#undef E
+    FGradient( g, x, n, target<Fwd<f64>> );
 }
 
 
-// struct FGrad {
-//     f64      eps;
-//     mcmc_f   f;
+void gradFD( f64 *g, f64 *x, size_t n )
+{
+    FiniteDifferences( g, x, n, 1e-8, target<f64> );
+}
 
-//     INLINE
-//     void operator() ( f64 *g, f64 *x, size_t n ) {
-//         FiniteDifferences( g, x, n, eps, f );
-//     }
-// };
+
 
 
 
@@ -77,6 +94,10 @@ i32 main( i32 argn, const char **argv )
     Mat(iMass);
     iMass.data = iMassD; iMass.rows = n; iMass.cols = n;
 
+    // MultiModal mm = { .m = 2.5, .s = 1.0 };
+
+    // printf("%.4f\n", target( iValsD, n ) );
+
 
     Results res = RunHMC(
         _ALLOCATOR_DEFAULT,
@@ -86,12 +107,27 @@ i32 main( i32 argn, const char **argv )
         nIter,
         iVals,
         seed,
-        MultipleNormals,
-        MultipleNormalsGrad
+        target<f64>,
+        grad
     );
 
-    // // MPrint(res.sample, "sample");
-    MPrintRLiteral(res.sample, "sample");
+    // MPrint(res.sample, "sample");
+    MPrintRLiteral(res.sample, "sample_ad");
+
+
+    Results resfd = RunHMC(
+        _ALLOCATOR_DEFAULT,
+        eps,
+        intTime,
+        iMass,
+        nIter,
+        iVals,
+        seed,
+        target<f64>,
+        gradFD
+    );
+
+    MPrintRLiteral(resfd.sample, "sample_fd");
 
 
     return 0;

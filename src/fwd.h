@@ -8,7 +8,7 @@
 // https://github.com/Tuxonomics/ForwardModeAD/blob/master/src/forward_normal/fw_univariate.h
 
 
-#include <cmath>
+// #include <cmath>
 
 #if 0
     typedef double f64;
@@ -768,13 +768,13 @@ void test_atanh( void )
 
 
 template <typename T>
-T test_grad_func( T *x, size_t n )
+T test_grad_func_1( T *x, size_t n )
 {
     T res = x[0]*x[0] + std::exp(x[1]);
     return res;
 }
 
-void test_grad( void )
+void test_grad_1( void )
 {
 #define n 2
 
@@ -782,8 +782,8 @@ void test_grad( void )
     f64 g1[n];
     f64 g2[n];
 
-    FiniteDifferences( g1, x, n, 1e-8, test_grad_func<f64> );
-    FGradient( g2, x, n, test_grad_func<Fwd<f64>> );
+    FiniteDifferences( g1, x, n, 1e-8, test_grad_func_1<f64> );
+    FGradient( g2, x, n, test_grad_func_1<Fwd<f64>> );
 
     for ( size_t i=0; i<n; ++i ) {
         ASSERT( Equal(g1[i], g2[i], 1e-6) );

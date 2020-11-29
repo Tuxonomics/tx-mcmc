@@ -8,7 +8,8 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
-#include <math.h>
+// #include <math.h>
+#include <cmath>
 
 
 #ifndef M_PI

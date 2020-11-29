@@ -116,7 +116,7 @@ void MPrint( Matrix m, const char *name = NULL )
     printf("\t.data = {\n\n");
     if ( m.data ) {
         u32 dim;
-        u32 prec = 1 + (u32) log10( (f64) (m.rows * m.cols) );
+        u32 prec = 1 + (u32) std::log10( (f64) (m.rows * m.cols) );
         for (u32 i=0; i<m.rows; ++i) {
             for (u32 j=0; j<m.cols; ++j) {
                 dim = i*m.cols + j;
@@ -305,7 +305,7 @@ b32 mCholeskiLower( f64 *a, i32 n )
                 if ( sum <= 0.0 ) {
                     return 0;
                 }
-                A(i,i) = sqrt(sum);
+                A(i,i) = std::sqrt(sum);
             }
             else {
                 A(j,i) = sum / A(i,i);
